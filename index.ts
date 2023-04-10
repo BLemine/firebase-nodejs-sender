@@ -1,9 +1,12 @@
-const express = require("express");
-const app = express();
-const PORT = 8000
-const firebaseAdminApp = require('firebase-admin');
-const bodyParser = require('body-parser');
+import express, { Express, Request, Response } from 'express';
+import bodyParser from "body-parser";
+import firebaseAdminApp from "firebase-admin";
 const serviceAccount = require("./keys/firebase-admin-credentials.json");
+import { Message, Notification } from 'firebase-admin/lib/messaging/messaging-api';
+
+const app: Express = express();
+const PORT: number = 8000
+
 firebaseAdminApp.initializeApp({
     credential: firebaseAdminApp.credential.cert(serviceAccount)
 });
@@ -12,13 +15,11 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(bodyParser.raw());
 
-app.get("/", (req, res) => res.send("This is Firebase nodejs integration example"));
+app.get("/", (req: Request, res: Response) => res.send("This is Firebase nodejs integration example"));
 app.post("/notify", async (req, res) => {
-    const { token, notification = {
-        "title": "Quick test",
-        "body": "Hey mate, this is a test !"
-    }, payload = {} } = req.body;
-    const message = {
+    const { token, notification = {}, payload = {} } = req.body;
+
+    const message: Message = {
         token: token,
         notification: notification,
         data: payload
@@ -27,10 +28,10 @@ app.post("/notify", async (req, res) => {
         res.status(400).send("Please provide a valid device token")
     else
         await firebaseAdminApp.messaging().send(message)
-            .then((response) => {
+            .then((response: string) => {
                 res.send("Notification sent successfully")
             })
-            .catch((error) => {
+            .catch((error: string) => {
                 res.status(500).send("Oops, notifcation wasn't sent !")
             });
 });
